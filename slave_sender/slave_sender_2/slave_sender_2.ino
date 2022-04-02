@@ -1,0 +1,206 @@
+/*
+ * Make variable names consistent (not pythonic)
+ * Can output array overflow? How to fix this?
+ */
+//importing libaries
+#include <Wire.h>
+
+// CONFIG VALUES
+int configPanicButton = 1;
+
+
+//setting pin variables
+const int FIRSTBUTTONPIN = 2;
+const int LEDPIN = 13;
+
+/*
+ Fields:
+        message: char array
+        priority: int, smaller value means higher priority
+ */
+class Message {       // The class
+  
+  public:             // Access specifier
+    int priority;        // Attribute (int variable)
+    char message[7];  // Attribute (string variable)
+};
+
+// Array of Message objects. Acts like priority output.
+// Fix: Static array size of Q_size constant.
+const int OUTPUTSIZE = 100;
+int endPointer = 0; // Tracks last value in output array.
+Message output[OUTPUTSIZE];
+
+void setup() {
+  Wire.begin(9);                // join i2c bus with address #8
+  Wire.onRequest(requestEvent); // register event
+
+  if (configPanicButton == 1) {
+    setupPanicButton();
+  }
+
+  // Add 'OR',||, if components needs LED.
+  if (configPanicButton == 1) {
+    setupLEDPIN();
+  }
+  }
+
+  
+  //Serial.begin(9600);  // start serial for output
+}
+
+// Setup Panic Button Input; Requires pin 2 for button 1 (as this is an interrupt pin).
+void setupPanicButton() {
+  attachInterrupt(0, buttonPress, FALLING);
+  pinMode(FIRSTBUTTONPIN, INPUT);
+}
+
+// Setup LED pin
+void setupLEDPIN() {
+  pinMode(LEDPIN, OUTPUT);
+}
+
+void loop() {
+  if (configPanicButton == 1) {
+    // Run panic button logic for main loop.
+    loopPanicButton();
+  }
+  if (configPhototransistor == 1) {
+    loopPhototransistor();
+  }
+  if (configIrRemote == 1){
+    loopIr();
+  }
+  delay(1000);
+}
+
+
+// function that executes whenever data is requested by master
+// this function is registered as an event, see setup()
+void requestEvent() {
+  int message_position = getMessagePosition(output, endPointer);
+  Wire.write(getMessage(output, message_position)); // respond with message of 6 bytes
+  // as expected by master
+}
+
+
+// Contain panic button logic required in main loop.
+void loopPanicButton() {
+  // IF panic button led is on, turn it off and add message to array.
+  if (digitalRead(LEDPIN) == HIGH) {
+    digitalWrite(LEDPIN, LOW);
+    Message object;
+    object.priority = 1;
+    // Issue: might just copy variable, not set.
+    strcpy(object.message, "IP0001"); // Sets string to message.
+    outputAppend(output, object);
+  }
+}
+
+// Interrupt routine: Only attatched if config values allow.
+void buttonPress() {
+  // Turns LED on - signifying panic button press has worked.
+  digitalWrite(LEDPIN, HIGH);
+}
+
+
+void measureLight() {
+  int sensorValue = analogRead(PHOTOTRANSISTORPIN);
+  // We map so we have ints with a max length of 3 digits.
+  int mappedsensorValue = map(sensorValue, 0, 1023, 0, 999);
+  int mappedLastLight = map(lastLight, 0, 1023, 0, 999);
+  int difference = mappedLastLight - mappedsensorValue;
+  if (difference < 0 ) {
+    difference = difference * -1;
+  }
+
+  // Create message
+  Message object;
+  object.priority = 4;
+  String code = "SL0";
+  code += paddingInt(difference);
+  code.toCharArray(object.message, 7); // Converts String so can be stored as Char Array.
+  outputAppend(output, object);
+}
+
+String paddingInt(int x) {
+  /*
+    Converts an integer to 3 digits long for message.
+    Also checks for -ve integers, and integers 4 digits long.
+    Returns it as String
+  */
+
+  // ERR if -ve integer
+  if (x < 0) {
+    return "ERR";
+  }
+
+  // 4 digits or more, cap at 999.
+  if (x > 999) {
+    return "999";
+  }
+
+  String output;
+  if (x < 10) {
+    output = "00";
+  }
+  else if (x < 100) {
+    output = "0";
+  }
+
+  output += String(x);
+  return output;
+}
+
+// https://forum.arduino.cc/t/get-minimum-value-from-array-solved/322128/5
+/*
+ Return message with highest priority from output array.
+ Linear approach can be improved upon.
+ */
+int getMessagePosition(Message* output, int size)
+{
+  int minimum = output[0].priority;
+  int objectPosition = 0;
+  for (int i = 0; i < size; i++)
+  {  
+     if (output[i].priority < minimum && output[i].priority != -1)
+        minimum = output[i].priority;
+        objectPosition = i;
+  }
+  // SHould remove message from output here (POP).
+  return objectPosition;
+  //return output[objectPosition].message;
+}
+
+/*
+ Gets message from array with index: messagePosition
+ Updates the array so the item at the end replaces message output from array.
+ Decrements the end pointer.
+ 
+ return: char* message
+ */
+char* getMessage(Message* output, int messagePosition) {
+  // Store message.
+  if (endPointer == 0){
+    // Prevents array underflow.
+    return "000000"; // CHECK this works
+  }
+  char* string_output = output[messagePosition].message;
+  // replace the message with message at the end of the array.
+  output[messagePosition] = output[endPointer-1];
+  // Decrement the pointer
+  endPointer -= 1;
+  return string_output;
+}
+
+/*
+ Appends Message object to output array
+ */
+void outputAppend(Message* output, Message obj) {
+  // Prevents array overflow, stops appending message after array is full.
+  // Fix this, as messages are lost.
+  if(endPointer != OUTPUTSIZE){
+    output[endPointer] = obj;
+    endPointer += 1;
+  }
+}
