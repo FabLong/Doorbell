@@ -23,6 +23,7 @@ const int rs = 12, en = 11, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 int const ButtonOnePin = 2;
 int const ButtonTwoPin = 3;
 int const servoPin = 13;
+int const SpeakerPin =0; //need to change this 
 
 // NEW variables
 int Contrast = 60; // Sets LCD contrast value.
@@ -118,7 +119,7 @@ void setup() {
 void loop() {
   int lastMode = mode;
   int potValue = analogRead(A0); // Poteniometer value
-  potValue = map(val, 0, 1023, 0, 255); // Map the analogue value between 0 and 255, change this.
+  potValue = map(potValue, 0, 1023, 0, 255); // Map the analogue value between 0 and 255, change this.
   
   getMessage(I2C_SLAVE1_ADDRESS); // Gets the message from slave 1
   checkMessage(I2C_SLAVE1_ADDRESS); // Shows the message on our LCD and handles it if nesssecary

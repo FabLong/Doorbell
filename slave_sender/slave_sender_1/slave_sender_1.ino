@@ -5,7 +5,7 @@
 int configPanicButton = 1;
 
 //setting pin variables
-const int firstButtonPin = 2;
+const int firstButtonPin = 3;
 const int ledPin = 13;
 
 /*
@@ -87,8 +87,8 @@ void LoopPanicButton() {
 // Interrupt routine: Only attatched if config values allow.
 void buttonPress() {
   // Turns LED on - signifying panic button press has worked.
-
   digitalWrite(ledPin, HIGH);
+  
 }
 
 
