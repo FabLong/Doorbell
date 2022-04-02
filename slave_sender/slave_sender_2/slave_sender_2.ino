@@ -4,14 +4,20 @@
  */
 //importing libaries
 #include <Wire.h>
+#include <IRremote.h>
 
 // CONFIG VALUES
 int configPanicButton = 1;
+int configPhototransistor = 1;
+int configIrRemote = 1;
 
 
 //setting pin variables
 const int FIRSTBUTTONPIN = 2;
 const int LEDPIN = 13;
+
+
+
 
 /*
  Fields:
@@ -43,10 +49,9 @@ void setup() {
   if (configPanicButton == 1) {
     setupLEDPIN();
   }
-  }
 
   
-  //Serial.begin(9600);  // start serial for output
+  Serial.begin(9600);  // start serial for output
 }
 
 // Setup Panic Button Input; Requires pin 2 for button 1 (as this is an interrupt pin).
@@ -60,16 +65,11 @@ void setupLEDPIN() {
   pinMode(LEDPIN, OUTPUT);
 }
 
+
 void loop() {
   if (configPanicButton == 1) {
     // Run panic button logic for main loop.
     loopPanicButton();
-  }
-  if (configPhototransistor == 1) {
-    loopPhototransistor();
-  }
-  if (configIrRemote == 1){
-    loopIr();
   }
   delay(1000);
 }
@@ -101,27 +101,13 @@ void loopPanicButton() {
 void buttonPress() {
   // Turns LED on - signifying panic button press has worked.
   digitalWrite(LEDPIN, HIGH);
+  /*
+    Ideas:
+    Start Alarm
+    Send message to master OR add to array of messages.
+  */
 }
 
-
-void measureLight() {
-  int sensorValue = analogRead(PHOTOTRANSISTORPIN);
-  // We map so we have ints with a max length of 3 digits.
-  int mappedsensorValue = map(sensorValue, 0, 1023, 0, 999);
-  int mappedLastLight = map(lastLight, 0, 1023, 0, 999);
-  int difference = mappedLastLight - mappedsensorValue;
-  if (difference < 0 ) {
-    difference = difference * -1;
-  }
-
-  // Create message
-  Message object;
-  object.priority = 4;
-  String code = "SL0";
-  code += paddingInt(difference);
-  code.toCharArray(object.message, 7); // Converts String so can be stored as Char Array.
-  outputAppend(output, object);
-}
 
 String paddingInt(int x) {
   /*
