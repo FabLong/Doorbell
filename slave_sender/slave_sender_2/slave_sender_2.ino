@@ -8,8 +8,6 @@
 
 // CONFIG VALUES
 int configPanicButton = 1;
-int configPhototransistor = 1;
-int configIrRemote = 1;
 
 
 //setting pin variables
@@ -51,7 +49,7 @@ void setup() {
   }
 
   
-  Serial.begin(9600);  // start serial for output
+  //Serial.begin(9600);  // start serial for output
 }
 
 // Setup Panic Button Input; Requires pin 2 for button 1 (as this is an interrupt pin).
@@ -99,6 +97,7 @@ void loopPanicButton() {
 
 // Interrupt routine: Only attatched if config values allow.
 void buttonPress() {
+  //Serial.write("hello");
   // Turns LED on - signifying panic button press has worked.
   digitalWrite(LEDPIN, HIGH);
   /*
