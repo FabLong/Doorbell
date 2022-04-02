@@ -10,7 +10,7 @@ const int firstButtonPin = 3;
 const int ledPin = 13;
 const int piezo = 10;
 Rtttl Rtttl(piezo);
-FLASH_STRING(sex_bomb,"sexbomb:d=4,o=5,b=125:b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#,p,b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#");
+FLASH_STRING(smooth,"SmoothCr:d=8,o=6,b=125:c,c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,16c,16c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,g,f,g,g,p,p,g,f,g,g,p,d#,4g,16f,16d#,c,2p,4p,p");
 
 
 /*
@@ -32,7 +32,7 @@ Message output[OUTPUTSIZE];
 
 
 void setup() {
-  Rtttl.play(sex_bomb);
+  Rtttl.play(smooth);
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onRequest(requestEvent);// register event
   if (configPanicButton == 1) {
