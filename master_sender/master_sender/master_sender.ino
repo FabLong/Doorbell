@@ -18,10 +18,14 @@ int sleepLocations[1] = {1}; //ignore these rooms when we are sleeping, e.g {1,5
 int numberSleepLocations = 1;
 
 // Create constants for Pin Names
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 6;
-int const SpeakerPin = 8;
+const int rs = 12, en = 11, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
+//int const SpeakerPin = 8; pin 8 is now being used by LCD to set contrast.
 int const ButtonOnePin = 2;
-int const servoPin = 7;
+int const ButtonTwoPin = 3;
+int const servoPin = 13;
+
+// NEW variables
+int Contrast = 60; // Sets LCD contrast value.
 
 //setup libarys
 SoftwareSerial SoftSerial(10, 9);
@@ -85,6 +89,7 @@ int servoLocation[] = {0, 60, 120, 180};
 
 void setup() {
   Wire.begin();        // Join i2c bus (address optional for master)
+  analogWrite(8, Contrast);
   lcd.begin(16, 2);    // Set up LCD's num columns and rows.
   lcd.clear();         // Clear LCD Buffer
 
@@ -94,10 +99,12 @@ void setup() {
   lcd.createChar(2, light);
   lcd.createChar(3, modePixel);
 
-  Serial.begin(9600);  // Start serial for output
+  Serial.begin(9600);  // Start serial for output // do we want this.
   SoftSerial.begin(9600);     // RFID (the SoftSerial baud rate)
   attachInterrupt(0, setMode, FALLING); // Attaching interrupt so button changes the mode of system.
+  attachInterrupt(1, setMode, FALLING);
   pinMode(ButtonOnePin, INPUT_PULLUP);
+  pinMode(ButtonTwoPin, INPUT_PULLUP);
   modeServo.attach(servoPin);
 
   // Set Initial mode on LCD and Servo position.
@@ -110,6 +117,8 @@ void setup() {
 
 void loop() {
   int lastMode = mode;
+  int potValue = analogRead(A0); // Poteniometer value
+  potValue = map(val, 0, 1023, 0, 255); // Map the analogue value between 0 and 255, change this.
   
   getMessage(I2C_SLAVE1_ADDRESS); // Gets the message from slave 1
   checkMessage(I2C_SLAVE1_ADDRESS); // Shows the message on our LCD and handles it if nesssecary
@@ -308,9 +317,12 @@ void setAlarm(int type) {
   duration = 400;
 
   for (int x = 0; x < 20; x++) {
+    /*
+     * Commmented out RFID checking code
     if (checkRfid() == 1) {
       break;
     }
+    */
     tone(SpeakerPin, firstNote, duration);
     delay(100);
     tone(SpeakerPin, secondNote, duration);
@@ -322,7 +334,7 @@ void setAlarm(int type) {
 /*
    This function will run to check if we have a recognised rfid tag being sensed, and returns 1 if this is true, and 0 if false
 */
-int checkRfid() { //checks wether an rfid tag is valid
+int checkRfid() { //checks whether an rfid tag is valid
   unsigned char rfidCode [14];
   // if date is coming from software serial port ==> data is coming from SoftSerial shield
   int count = 0;
