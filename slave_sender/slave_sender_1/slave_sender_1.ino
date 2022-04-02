@@ -1,5 +1,6 @@
 //importing libaries
 #include <Wire.h>
+#include <Rtttl.h>
 
 // CONFIG VALUES
 int configPanicButton = 1;
@@ -7,6 +8,10 @@ int configPanicButton = 1;
 //setting pin variables
 const int firstButtonPin = 3;
 const int ledPin = 13;
+const int piezo = 10;
+Rtttl Rtttl(piezo);
+FLASH_STRING(sex_bomb,"sexbomb:d=4,o=5,b=125:b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#,p,b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#");
+
 
 /*
   Fields:
@@ -27,6 +32,7 @@ Message output[OUTPUTSIZE];
 
 
 void setup() {
+  Rtttl.play(sex_bomb);
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onRequest(requestEvent);// register event
   if (configPanicButton == 1) {
@@ -53,16 +59,18 @@ void setupLedPin() {
 
 
 void loop() {
+  Rtttl.updateMelody();
   if (configPanicButton == 1) {
     // Run panic button logic for main loop.
     LoopPanicButton();
   }
-  delay(1000);
+  //delay(1000);
 }
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void requestEvent() {
+  
   int messagePosition = getMessagePosition(output, endPointer);
   Wire.write(getMessage(output, messagePosition)); // respond with message of 6 bytes
   // as expected by master
@@ -172,4 +180,8 @@ void outputAppend(Message* output, Message obj) {
     output[endPointer] = obj;
     endPointer += 1;
   }
+}
+
+void song(){
+  
 }
