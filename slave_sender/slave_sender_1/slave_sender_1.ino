@@ -59,21 +59,23 @@ void setupLedPin() {
 
 
 void loop() {
-  Rtttl.updateMelody();
   if (configPanicButton == 1) {
     // Run panic button logic for main loop.
     LoopPanicButton();
   }
-  //delay(1000);
+  delay(1000);
 }
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void requestEvent() {
-  
+
   int messagePosition = getMessagePosition(output, endPointer);
   Wire.write(getMessage(output, messagePosition)); // respond with message of 6 bytes
   // as expected by master
+  for (int x =0, x< 100, x++){
+    Rtttl.updateMelody();
+  }
 }
 
 
@@ -180,8 +182,4 @@ void outputAppend(Message* output, Message obj) {
     output[endPointer] = obj;
     endPointer += 1;
   }
-}
-
-void song(){
-  
 }
