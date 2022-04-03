@@ -11,7 +11,7 @@ const int ledPin = 13;
 const int piezo = 10;
 int playing =0;
 Rtttl Rtttl(piezo);
-char smooth[] = "SmoothCr:d=8,o=6,b=125:c,c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,16c,16c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,g,f,g,g,p,p,g,f,g,g,p,d#,4g,16f,16d#,c,2p,4p,p";
+char smooth[] = "SmoothCr:d=8,o=6,b=125:c,c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,16c,16c,16c,16c,d,d,p,16d,16d,d#,d#,p,16d#,16d#,d,a#5,d,c,p,c,c,16c,16c,d,d,p,16d,16d,d#,d#,p";
 
 
 /*
@@ -33,7 +33,9 @@ Message output[OUTPUTSIZE];
 
 
 void setup() {
-  Rtttl.play(smooth);
+
+  Serial.begin(9600);      // open the serial port at 9600 bps:    
+  //Rtttl.play(smooth);
 
   Wire.begin(8);                // join i2c bus with address #8
   Wire.onRequest(requestEvent);// register event
@@ -61,33 +63,39 @@ void setupLedPin() {
 
 
 void loop() {
- if (playing ==1){
-    Rtttl.updateMelody();
- }
-  if (playing ==0){
-    Rtttl.play(smooth);
 
+ if (playing == 1){
+    playing =0;
+    Serial.print("Playing 1");
+   
+    for (int x = 0; x < 10; x++){
+    tone(piezo, 500, 400);
+    delay(100);
+    tone(piezo,200, 400);
+    delay(100);
   }
+    Serial.print("PLaying");
+}
+
+ 
+
   if (configPanicButton == 1) {
     // Run panic button logic for main loop.
     LoopPanicButton();
+ 
   }
 }
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void requestEvent() {
+
   int messagePosition = getMessagePosition(output, endPointer);
   Wire.write(getMessage(output, messagePosition)); // respond with message of 6 bytes
-  playRtttlBlockingPGM(piezo, smooth);
+  //playRtttlBlockingPGM(piezo, smooth);
 
   // as expected by master
-  if (playing == 1){
-    playing = 0;
-  }
-  else{
-    //playing = 1;
-  }
+  playing =1;
 }
 
 
@@ -111,7 +119,7 @@ void LoopPanicButton() {
 void buttonPress() {
   // Turns LED on - signifying panic button press has worked.
   digitalWrite(ledPin, HIGH);
-  playing = 0;
+  //playing = 0;
 }
 
 

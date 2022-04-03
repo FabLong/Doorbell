@@ -4,7 +4,6 @@
  */
 //importing libaries
 #include <Wire.h>
-#include <Rtttl.h>
 
 // CONFIG VALUES
 int configPanicButton = 1;
@@ -16,8 +15,6 @@ const int LEDPIN = 13;
 const int piezo = 10;
 int playing =0;
 
-Rtttl Rtttl(piezo);
-FLASH_STRING(sex_bomb,"sexbomb:d=4,o=5,b=125:b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#,p,b,g#,b,g#,8p,c#6,8b,d#6,b,p,8b,8b,8b,8g#,8b,8b,8b,8b,8a#,8a#,8a#,8g#,8a#,8p,b,g#,b,g#,8p,c#6,8b,d#6,b,8p,8d#,8b,8b,8b,8g#,g,8g,8g#");
 
 
 
@@ -42,7 +39,8 @@ int endPointer = 0; // Tracks last value in output array.
 Message output[OUTPUTSIZE];
 
 void setup() {
-  Rtttl.play(sex_bomb);
+    Serial.begin(9600);      // open the serial port at 9600 bps:    
+
   Wire.begin(9);                // join i2c bus with address #8
   Wire.onRequest(requestEvent); // register event
 
@@ -72,12 +70,19 @@ void setupLEDPIN() {
 
 
 void loop() {
-  if (playing ==1){
-    Rtttl.updateMelody();
- }
- if (playing ==0){
-    Rtttl.play(sex_bomb);
+  if (playing == 1){
+    playing =0;
+    Serial.print("Playing 1");
+   
+    for (int x = 0; x < 10; x++){
+    tone(piezo, 700, 400);
+    delay(100);
+    tone(piezo,300, 400);
+    delay(100);
   }
+    Serial.print("PLaying");
+}
+
   if (configPanicButton == 1) {
     // Run panic button logic for main loop.
     loopPanicButton();
@@ -91,12 +96,7 @@ void requestEvent() {
   int message_position = getMessagePosition(output, endPointer);
   Wire.write(getMessage(output, message_position)); // respond with message of 6 bytes
   // as expected by master
-  if (playing == 1){
-    playing = 0;
-  }
-  else{
-    playing = 1;
-  }
+  playing =1;
 }
 
 
